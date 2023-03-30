@@ -7,8 +7,13 @@ use regex::Regex;
 use rusqlite::{Connection, params, OptionalExtension};
 use nostr_sdk::prelude::*;
 
-const RELAY_URLS: [&str; 1] = [
-    "wss://relay.damus.io"
+const RELAY_URLS: [&str; 6] = [
+    "wss://nostr.bitcoiner.social",
+    "wss://relay.snort.social",
+    "wss://relay.damus.io",
+    "wss://relay.nostr.wirednet.jp",
+    "wss://nostr.holybea.com",
+    "wss://nostr.fediverse.jp"
 ];
 
 fn key_getter() -> Keys {
