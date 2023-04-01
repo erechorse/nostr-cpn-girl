@@ -1,7 +1,6 @@
 use std::fs::File;
 use std::io::{ErrorKind, Write, Read};
 use std::str::FromStr;
-use std::time::Duration;
 
 use regex::Regex;
 use rusqlite::{Connection, params, OptionalExtension};
@@ -130,38 +129,17 @@ async fn main() -> nostr_sdk::Result<()> { // Result type conflicts with rusqlit
 
     client.connect().await;
 
-    let subscription = Filter::new()
-        .limit(1)
-        .kind(Kind::Metadata)
-        .author(my_keys.public_key());
-    client.subscribe(vec![subscription]).await;
-
     // Set metadata
-    let timeout = Duration::from_secs(1);
-    let start = std::time::Instant::now();
-    'outer: loop {
-        let mut notifications = client.notifications();
-        while let Ok(notification) = notifications.recv().await {
-            if let RelayPoolNotification::Event(_url, event) = notification {
-                match event.kind {
-                    Kind::Metadata => {
-                        println!("already setted metadata");
-                        break 'outer;
-                    },
-                    _ => {}
-                }
-            }
-            if start.elapsed() > timeout {
-                let metadata = Metadata::new()
-                    .name("testname")
-                    .display_name("My TEST")
-                    .about("hoge");
-                client.set_metadata(metadata).await?;
-                println!("setted metadata");
-                break 'outer;
-            }
-        }
-    }
+    let metadata = Metadata::new()
+        .name("cnpgirl")
+        .display_name("ログボちゃん(テスト運用中)")
+        .about("本名: 広瀬・ログボ・馬子。このアカウントに「ログボ」「ログインボーナス」とリプしていると、そのうちログインボーナスを配布するかも。")
+        .website(Url::parse("https://github.com/erechorse/nostr-cpn-girl")?)
+        .picture(Url::parse("https://i.gyazo.com/fe5c0915065b515e509ef351c71b617a.jpg")?)
+        .nip05("cpngirl@erechorse.github.io")
+        .lud06("viableproduct37@walletofsatoshi.com");
+    client.set_metadata(metadata).await?;
+    println!("setted metadata");
 
     // wait for mention
     let subscription = Filter::new()
