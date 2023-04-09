@@ -131,7 +131,7 @@ async fn main() -> nostr_sdk::Result<()> { // Result type conflicts with rusqlit
 
     // Set metadata
     let metadata = Metadata::new()
-        .name("cnpgirl")
+        .name("cpngirl")
         .display_name("ログボちゃん(テスト運用中)")
         .about("本名: 広瀬・ログボ・馬子。このアカウントに「ログボ」「ログインボーナス」とリプしていると、そのうちログインボーナスを配布するかも。")
         .website(Url::parse("https://github.com/erechorse/nostr-cpn-girl")?)
