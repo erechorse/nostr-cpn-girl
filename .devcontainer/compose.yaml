@@ -1,0 +1,33 @@
+version: "3.8"
+services:
+  app:
+    build: .
+    container_name: app
+    volumes:
+      - ..:/workspace
+    working_dir: /workspace
+    command: /bin/sh
+    tty: true
+    environment:
+      - DATABASE_URL=postgres://postgres:password@db/postgres
+    depends_on:
+      - relay
+      - db
+  relay:
+    image: scsibug/nostr-rs-relay:0.8.8
+    container_name: relay
+    restart: always
+    ports:
+      - 7000:8080
+  db:
+    image: postgres:15.2
+    restart: always
+    environment:
+      - POSTGRES_PASSWORD=password
+    ports:
+      - 5432:5432
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
