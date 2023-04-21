@@ -1,59 +1,22 @@
-use std::fs::File;
 use std::io::{ErrorKind, Write, Read};
 use std::str::FromStr;
+use std::env;
 
 use regex::Regex;
 use rusqlite::{Connection, params, OptionalExtension};
 use nostr_sdk::prelude::*;
 
-const RELAY_URLS: [&str; 6] = [
-    "wss://nostr.bitcoiner.social",
-    "wss://relay.snort.social",
-    "wss://relay.damus.io",
-    "wss://relay.nostr.wirednet.jp",
-    "wss://nostr.holybea.com",
-    "wss://nostr.fediverse.jp"
+// const RELAY_URLS: [&str; 6] = [
+//     "wss://nostr.bitcoiner.social",
+//     "wss://relay.snort.social",
+//     "wss://relay.damus.io",
+//     "wss://relay.nostr.wirednet.jp",
+//     "wss://nostr.holybea.com",
+//     "wss://nostr.fediverse.jp"
+// ];
+const RELAY_URLS: [&str; 1] = [
+    "ws://localhost:7000"
 ];
-
-fn key_getter() -> Keys {
-    // Open secret key file
-    let f = File::open("key.txt");
-
-    // If file doesn't exist, create it and write secret key to it
-    let mut f = match f {
-        Ok(file) => file,
-        Err(ref error) if error.kind() == ErrorKind::NotFound => {
-            match File::create("key.txt") {
-                Ok(mut fc) => {
-                    let my_keys: Keys = Keys::generate();
-                    let hex_sc_key = format!("{}",
-                    my_keys.secret_key().unwrap().display_secret());
-                    fc.write_all(hex_sc_key.as_bytes()).unwrap();
-                    return my_keys;
-                },
-                Err(e) => {
-                    panic!(
-                        "Tried to create file but there was a problem: {:?}",
-                        e
-                    )
-                },
-            }
-        },
-        Err(error) => {
-            panic!(
-                "There was a problem opening the file: {:?}",
-                error
-            )
-        },
-    };
-
-    // read secret key from file
-    let mut s = String::new();
-    f.read_to_string(&mut s).unwrap();
-    Keys::new(
-        SecretKey::from_str(s.trim()).unwrap(),
-    )
-}
 
 fn query_user(conn: &Connection, pubkey: &str) -> Result<Option<User>, rusqlite::Error> {
     let mut stmt = conn.prepare(
@@ -104,8 +67,14 @@ struct User {
 #[tokio::main]
 async fn main() -> nostr_sdk::Result<()> { // Result type conflicts with rusqlite::Result type
     // Get keys
-    let my_keys = key_getter();
-    println!("{}", my_keys.public_key().to_bech32()?);
+    let my_keys = Keys::new(
+        SecretKey::from_str(
+            env::var("CPN_SECRET_KEY")
+                .expect("CPN_SECRET_KEY is not set")
+                .as_str()
+        )?
+    );
+    println!("My bot pubkey is {}", my_keys.public_key().to_bech32()?);
     
     let conn = Connection::open("user.db")?;
     conn.execute(
