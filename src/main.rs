@@ -5,6 +5,7 @@ use diesel::dsl::exists;
 use diesel::{prelude::*, select};
 use nostr_sdk::prelude::*;
 use regex::Regex;
+use unicode_normalization::UnicodeNormalization;
 
 use nostr_cpn_girl::*;
 use self::models::*;
@@ -67,7 +68,7 @@ async fn main() -> Result<()> {
                 match event.kind {
                     Kind::TextNote => {
                         let re = Regex::new(r"ログインボーナス|ログボ")?;
-                        if re.is_match(&event.content) {
+                        if re.is_match(&event.content.nfkc().collect::<String>()) {
                             let exists = select(
                                 exists(users.filter(id.eq(&event.pubkey.to_bech32()?))))
                                 .get_result::<bool>(connection)

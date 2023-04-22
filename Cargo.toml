@@ -11,3 +11,4 @@ tokio = { version = "1", features = ["full"] }
 diesel = { version = "2", features = ["postgres"] }
 dotenvy = "0.15"
 regex = "1"
+unicode-normalization = "0.1.20"
