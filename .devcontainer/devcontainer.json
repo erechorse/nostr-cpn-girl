@@ -1,5 +1,5 @@
 {
-    "name": "db-relay-tester",
+    "name": "nostr-cpn-girl",
     "dockerComposeFile": "./compose.yaml",
     "service": "app",
 	"workspaceFolder": "/workspace",
