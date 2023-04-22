@@ -1,0 +1,13 @@
+{
+    "name": "nostr-cpn-girl",
+    "dockerComposeFile": "./compose.yaml",
+    "service": "app",
+	"workspaceFolder": "/workspace",
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"rust-lang.rust-analyzer"
+			]
+		}
+	}
+}
