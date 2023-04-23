@@ -69,7 +69,6 @@ async fn main() -> Result<()> {
 
     // wait for mention
     let subscription = Filter::new()
-        .limit(10) // up to 10 mentions
         .since(Timestamp::from(since_this_time))
         .kind(Kind::TextNote)
         .pubkey(my_keys.public_key());
