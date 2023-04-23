@@ -54,9 +54,23 @@ async fn main() -> Result<()> {
     client.set_metadata(metadata).await?;
     println!("setted metadata");
 
+    let max_last_login_time = users
+        .select(diesel::dsl::max(last_login_time))
+        .get_result::<Option<i64>>(connection)
+        .expect("Error loading users");
+    let since_this_time = match max_last_login_time {
+        Some(time) => if 10 + time < Timestamp::now().as_i64() {
+            Timestamp::now().as_u64() - 10
+        } else {
+            time as u64 + 1 // +1 to avoid duplication
+        }
+        None => Timestamp::now().as_u64(),
+    };
+
     // wait for mention
     let subscription = Filter::new()
-        .limit(0)
+        .limit(10) // up to 10 mentions
+        .since(Timestamp::from(since_this_time))
         .kind(Kind::TextNote)
         .pubkey(my_keys.public_key());
     client.subscribe(vec![subscription]).await;
@@ -68,6 +82,15 @@ async fn main() -> Result<()> {
                     Kind::TextNote => {
                         let re = Regex::new(r"ログインボーナス|ログボ")?;
                         if re.is_match(&event.content) {
+                            if &event.created_at.as_i64() > &(Timestamp::now().as_i64() + 9) {
+                                client.publish_text_note(format!(
+                                    "未来からログインしないで！"
+                                ), &[
+                                    Tag::Event(event.id, None, None),
+                                    Tag::PubKey(event.pubkey, None)
+                                ]).await?;
+                                continue;
+                            }
                             let exists = select(
                                 exists(users.filter(id.eq(&event.pubkey.to_bech32()?))))
                                 .get_result::<bool>(connection)
@@ -92,6 +115,12 @@ async fn main() -> Result<()> {
                                 };
                                 match days_since_last_login {
                                     0 => { // If user logged in today
+                                        after_user.total_login_count = &before_user.total_login_count;
+                                        after_user.consecutive_login_count = &before_user.consecutive_login_count;
+                                        let user = diesel::update(users.find(event.pubkey.to_bech32()?))
+                                            .set(&after_user)
+                                            .get_result::<User>(connection)?;
+                                        println!("Updated user: {}", user.id);
                                         client.publish_text_note(format!(
                                             "今日はもうログイン済みです。\nあなたの合計ログイン回数は{}回です。\nあなたの連続ログイン回数は{}回です。",
                                             before_user.total_login_count,
