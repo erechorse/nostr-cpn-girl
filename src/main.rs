@@ -11,7 +11,7 @@ use self::models::*;
 
 const RELAY_URLS: [&str; 6] = [
     "wss://nostr.bitcoiner.social",
-    "wss://relay.snort.social",
+    "wss://nostr-relay.nokotaro.com/",
     "wss://relay.damus.io",
     "wss://relay.nostr.wirednet.jp",
     "wss://nos.lol",
