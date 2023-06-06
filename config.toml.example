@@ -1,5 +1,5 @@
 [nostr]
-secretkey = "hex or npub"
+secretkey = "hex or nsec"
 relays = [
     "ws://relay:8080"
 ]
