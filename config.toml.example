@@ -1,0 +1,14 @@
+[nostr]
+secretkey = "hex or npub"
+relays = [
+    "ws://relay:8080"
+]
+
+[metadata]
+name = "name"
+display_name = "display_name"
+about = "profile"
+website = "https://github.com/erechorse/nostr-cpn-girl"
+picture = "https://example.com/avatar.png"
+nip05 = "username@example.com"
+lud06 = "username@example.com"
