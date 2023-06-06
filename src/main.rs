@@ -1,33 +1,28 @@
 use std::str::FromStr;
-use std::env;
+use std::fs;
 
 use diesel::dsl::exists;
 use diesel::{prelude::*, select};
+use nostr_cpn_girl::config::Config;
 use nostr_sdk::prelude::*;
 use regex::Regex;
 
 use nostr_cpn_girl::*;
 use self::models::*;
 
-const RELAY_URLS: [&str; 6] = [
-    "wss://nostr.bitcoiner.social",
-    "wss://relay.snort.social",
-    "wss://relay.damus.io",
-    "wss://relay.nostr.wirednet.jp",
-    "wss://nos.lol",
-    "wss://nostr-pub.wellorder.net"
-];
-
 #[tokio::main]
 async fn main() -> Result<()> {
     use self::schema::users::dsl::*;
+
+    let f = fs::read_to_string("config.toml")
+        .expect("could not read config.toml");
+    let config: Config = toml::from_str(&f)
+        .expect("could not parse config.toml");
     
     // Get keys
     let my_keys = Keys::new(
         SecretKey::from_str(
-            env::var("CPN_SECRET_KEY")
-                .expect("CPN_SECRET_KEY is not set")
-                .as_str()
+            &config.nostr.secretkey
         )?
     );
     println!("My bot pubkey is {}", my_keys.public_key().to_bech32()?);
@@ -37,20 +32,20 @@ async fn main() -> Result<()> {
 
     // Create a new client
     let client = Client::new(&my_keys);
-    for relay in RELAY_URLS {
+    for relay in &config.nostr.relays {
         client.add_relay(relay, None).await?;
     }
     client.connect().await;
 
     // Set metadata
     let metadata = Metadata::new()
-        .name("cpngirl")
-        .display_name("ログボちゃん(テスト運用中)")
-        .about("本名: 広瀬・ログボ・馬子。このアカウントに「ログボ」「ログインボーナス」とリプしていると、そのうちログインボーナスを配布するかも。")
-        .website(Url::parse("https://github.com/erechorse/nostr-cpn-girl")?)
-        .picture(Url::parse("https://i.gyazo.com/fe5c0915065b515e509ef351c71b617a.jpg")?)
-        .nip05("cpngirl@erechorse.github.io")
-        .lud06("viableproduct37@walletofsatoshi.com");
+        .name(config.metadata.name)
+        .display_name(config.metadata.display_name)
+        .about(config.metadata.about)
+        .website(Url::parse(&config.metadata.website)?)
+        .picture(Url::parse(&config.metadata.picture)?)
+        .nip05(&config.metadata.nip05)
+        .lud06(&config.metadata.lud06);
     client.set_metadata(metadata).await?;
     println!("set metadata");
 
@@ -68,6 +63,15 @@ async fn main() -> Result<()> {
                     Kind::TextNote => {
                         let re = Regex::new(r"ログインボーナス|ログボ")?;
                         if re.is_match(&event.content) {
+                            if &event.created_at.as_i64() > &(Timestamp::now().as_i64() + 9) {
+                                client.publish_text_note(format!(
+                                    "未来からログインしないで！"
+                                ), &[
+                                    Tag::Event(event.id, None, None),
+                                    Tag::PubKey(event.pubkey, None)
+                                ]).await?;
+                                continue;
+                            }
                             let exists = select(
                                 exists(users.filter(id.eq(&event.pubkey.to_bech32()?))))
                                 .get_result::<bool>(connection)

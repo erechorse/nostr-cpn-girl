@@ -10,5 +10,4 @@ Cargo.lock
 **/*.rs.bk
 
 .vscode/
-*.db
-key.txt
+config.toml
