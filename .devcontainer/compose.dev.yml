@@ -1,0 +1,13 @@
+version: "3.8"
+services:
+  relay:
+    image: scsibug/nostr-rs-relay:0.8.8
+    container_name: relay
+    restart: always
+    ports:
+      - 7000:8080
+  db:
+    volumes:
+      - test_db:/var/lib/postgresql/data
+volumes:
+  test_db:

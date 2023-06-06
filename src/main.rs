@@ -9,13 +9,16 @@ use regex::Regex;
 use nostr_cpn_girl::*;
 use self::models::*;
 
-const RELAY_URLS: [&str; 6] = [
-    "wss://nostr.bitcoiner.social",
-    "wss://relay.snort.social",
-    "wss://relay.damus.io",
-    "wss://relay.nostr.wirednet.jp",
-    "wss://nos.lol",
-    "wss://nostr-pub.wellorder.net"
+// const RELAY_URLS: [&str; 6] = [
+//     "wss://nostr.bitcoiner.social",
+//     "wss://relay.snort.social",
+//     "wss://relay.damus.io",
+//     "wss://relay.nostr.wirednet.jp",
+//     "wss://nos.lol",
+//     "wss://nostr-pub.wellorder.net"
+// ];
+const RELAY_URLS: [&str; 1] = [
+    "ws://relay:8080"
 ];
 
 #[tokio::main]
