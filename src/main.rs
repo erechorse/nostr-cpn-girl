@@ -52,7 +52,7 @@ async fn main() -> Result<()> {
         .nip05("cpngirl@erechorse.github.io")
         .lud06("viableproduct37@walletofsatoshi.com");
     client.set_metadata(metadata).await?;
-    println!("setted metadata");
+    println!("set metadata");
 
     // wait for mention
     let subscription = Filter::new()
