@@ -1,7 +1,7 @@
 {
     "name": "nostr-cpn-girl",
     "dockerComposeFile": [
-		"./compose.yml",
+		"../compose.yml",
 		"./compose.dev.yml"],
     "service": "app",
 	"workspaceFolder": "/workspace",
