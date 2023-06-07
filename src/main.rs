@@ -6,6 +6,7 @@ use diesel::{prelude::*, select};
 use nostr_cpn_girl::config::Config;
 use nostr_sdk::prelude::*;
 use regex::Regex;
+use unicode_normalization::UnicodeNormalization;
 
 use nostr_cpn_girl::*;
 use self::models::*;
@@ -62,7 +63,7 @@ async fn main() -> Result<()> {
                 match event.kind {
                     Kind::TextNote => {
                         let re = Regex::new(r"ログインボーナス|ログボ")?;
-                        if re.is_match(&event.content) {
+                        if re.is_match(&event.content.nfkc().collect::<String>()) {
                             if &event.created_at.as_i64() > &(Timestamp::now().as_i64() + 9) {
                                 client.publish_text_note(format!(
                                     "未来からログインしないで！"
