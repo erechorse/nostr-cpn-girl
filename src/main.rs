@@ -33,7 +33,7 @@ async fn main() -> Result<()> {
 
     // Create a new client
     let client = Client::new(&my_keys);
-    for relay in &config.nostr.relays {
+    for relay in config.nostr.relays {
         client.add_relay(relay, None).await?;
     }
     client.connect().await;
